@@ -1,0 +1,49 @@
+---
+--- MIT License - Copyright (c) 2020 Sean Moss
+--- This file is subject to the terms and conditions of the MIT License, the text of which can be found in the
+--- 'LICENSE' file at the root of this repository, or online at <https://opensource.org/licenses/MIT>.
+---
+
+-- Premake project script for the content project. It is written in Lua.
+
+
+-- Workspace
+workspace "content"
+    -- Shared settings
+    language "C++"
+    cppdialect "C++11"
+    location "build"
+    configurations { "Release" }
+    platforms { "x64" }
+    architecture "x86_64"
+    flags { "MultiProcessorCompile" }
+    targetdir "build/bin"
+
+    -- Runtime
+    runtime "Release"
+    symbols "Off"
+    optimize "Speed"
+
+    -- Platform Settings
+    filter { "system:windows" }
+        systemversion "latest"
+        staticruntime "off"
+    filter { "toolset:gcc or clang" }
+        buildoptions { "-fvisibility=hidden", "-fPIC" }
+    filter {}
+
+
+-- Library
+project "content"
+    -- Settings
+    includedirs { "src" }
+    targetname "content"
+    kind "SharedLib"
+
+    -- Files
+    files {
+        "src/**.h",
+        "src/**.c",
+        "src/**.hpp",
+        "src/**.cpp"
+    }
