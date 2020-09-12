@@ -28,4 +28,22 @@ The full text of the MIT license can be found in the LICENSE file in this reposi
 
 This library is made up of a wide set of other code solutions, which are listed here:
 
+### [stb](https://github.com/nothings/stb)
 
+* Components: stb_vorbis.c
+* License: Public Domain
+* Description:
+  * `stb_vorbis.c` - Used to load OGG/Vorbis audio files
+* Version:
+  * `stb_vorbis.c` - `1.20`
+
+### [dr_libs](https://github.com/mackron/dr_libs)
+
+* Components: dr_wav.h, dr_flac.h
+* License: Public Domain
+* Description:
+  * `dr_wav.h` - Used to load WAVE audio files
+  * `dr_flac.h` - Used to load FLAC audio files
+* Version:
+  * `dr_wav.h` - `0.12.11`
+  * `dr_flac.h` - `0.12.20`
