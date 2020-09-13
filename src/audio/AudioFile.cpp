@@ -9,6 +9,7 @@
 #include "./AudioFile.hpp"
 
 #include <fstream>
+#include <algorithm>
 
 
 // ====================================================================================================================
@@ -69,7 +70,7 @@ AudioFile::AudioFile(const std::string& path)
 	else if (type_ == AudioType::VORBIS) {
 		const auto info = stb_vorbis_get_info(handle_.vorbis);
 		const auto count = stb_vorbis_stream_length_in_samples(handle_.vorbis);
-		info_.totalFrames = count / info.channels;
+		info_.totalFrames = count;
 		info_.sampleRate = info.sample_rate;
 		info_.channels = info.channels;
 	}
@@ -144,9 +145,10 @@ AudioType AudioFile::DetectType(const std::string& path)
 	if (extPos == std::string::npos) {
 		return AudioType::UNKNOWN;
 	}
-	const auto ext = path.substr(extPos);
+	auto ext = path.substr(extPos);
+	std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) { return std::tolower(c); });
 	
-	if (ext == ".wav") {
+	if (ext == ".wav" || ext == ".wave") {
 		return AudioType::WAV;
 	}
 	else if (ext == ".ogg") {
