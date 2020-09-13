@@ -26,6 +26,12 @@ VEGA_API_EXPORT void vegaAudioCloseFile(AudioFile* handle)
 	}
 }
 
+/// Audio API: Sound file type
+VEGA_API_EXPORT AudioType vegaAudioGetType(AudioFile* handle)
+{
+	return handle ? handle->type() : AudioType::UNKNOWN;
+}
+
 /// Audio API: Sound file error
 VEGA_API_EXPORT AudioError vegaAudioGetError(AudioFile* handle)
 {
