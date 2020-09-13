@@ -78,6 +78,7 @@ AudioFile::AudioFile(const std::string& path)
 		info_.sampleRate = handle_.flac->sampleRate;
 		info_.channels = handle_.flac->channels;
 	}
+	remaining_ = info_.totalFrames;
 }
 
 // ====================================================================================================================
@@ -92,6 +93,47 @@ AudioFile::~AudioFile()
 	}
 	else if (type_ == AudioType::FLAC && handle_.flac) {
 		drflac_close(handle_.flac);
+	}
+}
+
+// ====================================================================================================================
+uint64_t AudioFile::readFrames(uint64_t frameCount, int16_t* buffer)
+{
+	// Check error states
+	if (lastError_ != AudioError::NO_ERROR) {
+		lastError_ = AudioError::BAD_STATE_READ;
+		return 0;
+	}
+	if (remaining_ == 0) {
+		lastError_ = AudioError::READ_AT_END;
+		return 0;
+	}
+
+	// Get actual read size
+	const uint64_t fCount = std::min(frameCount, remaining_);
+	const uint64_t sCount = fCount * info_.channels;
+
+	// Dispatch read command
+	uint64_t actual = 0;
+	if (type_ == AudioType::WAV) {
+		actual = drwav_read_pcm_frames_s16(handle_.wav, fCount, buffer);
+	}
+	else if (type_ == AudioType::VORBIS) {
+		actual = stb_vorbis_get_samples_short_interleaved(handle_.vorbis, int(info_.channels), buffer, int(sCount));
+	}
+	else {
+		actual = drflac_read_pcm_frames_s16(handle_.flac, fCount, buffer);
+	}
+
+	// Report
+	if (actual != fCount) {
+		lastError_ = AudioError::BAD_DATA_READ;
+		return 0;
+	}
+	else {
+		lastError_ = AudioError::NO_ERROR;
+		remaining_ -= actual;
+		return uint64_t(actual);
 	}
 }
 

@@ -21,6 +21,9 @@ enum class AudioError : uint32_t
 	FILE_NOT_FOUND = 1,		// The file to open does not exist
 	UNKNOWN_TYPE = 2,		// The file is not a known audio type
 	INVALID_FILE = 3,		// The file failed to open (most likely an invalid header)
+	BAD_DATA_READ = 4,		// Reading samples failed (most likely corrupt frame data)
+	READ_AT_END = 5,		// Attempting to read a fully consumed file
+	BAD_STATE_READ = 6,		// Attempting to read from a file object that is already errored
 }; // enum class AudioError
 
 
@@ -55,8 +58,12 @@ public:
 	inline const std::string& path() const { return path_; }
 	inline AudioType type() const { return type_; }
 	inline const AudioInfo& info() const { return info_; }
+	inline uint64_t remaining() const { return remaining_; }
 	inline AudioError error() const { return lastError_; }
 	inline bool hasError() const { return lastError_ != AudioError::NO_ERROR; }
+
+	// Returns the actual number of frames read, or 0 for an error
+	uint64_t readFrames(uint64_t frameCount, int16_t* buffer);
 
 	static AudioType DetectType(const std::string& path);
 	
@@ -70,5 +77,6 @@ private:
 		drflac* flac;
 	} handle_;
 	AudioInfo info_;
+	uint64_t remaining_;
 	AudioError lastError_;
 }; // class AudioFile
