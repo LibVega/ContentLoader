@@ -1,0 +1,8 @@
+
+# Ignoring vendored files for more accurate Github filetype recognition
+src/audio/dr_wav.h linguist-vendored
+src/audio/dr_flac.h linguist-vendored
+src/audio/stb_vorbis.c linguist-vendored
+
+# Setting correct filetypes
+content.project linguist-language=Lua
