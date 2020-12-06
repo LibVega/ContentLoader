@@ -7,7 +7,7 @@
 #include "./image/ImageFile.hpp"
 
 /// Image API: Open image file
-VEGA_API_EXPORT ImageFile* vegaOpenImageFile(const char* const path, ImageError* error)
+VEGA_API_EXPORT ImageFile* vegaImageOpenFile(const char* const path, ImageError* error)
 {
 	auto handle = new ImageFile(path);
 	*error = handle->error();
@@ -19,7 +19,7 @@ VEGA_API_EXPORT ImageFile* vegaOpenImageFile(const char* const path, ImageError*
 }
 
 /// Image API: Close image file
-VEGA_API_EXPORT void vegaCloseImageFile(ImageFile* handle)
+VEGA_API_EXPORT void vegaImageCloseFile(ImageFile* handle)
 {
 	if (handle) {
 		delete handle;
