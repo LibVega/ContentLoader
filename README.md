@@ -30,12 +30,14 @@ This library is made up of a wide set of other code solutions, which are listed 
 
 ### [stb](https://github.com/nothings/stb)
 
-* Components: stb_vorbis.c
+* Components: stb_vorbis.c, stb_image.h
 * License: Public Domain
 * Description:
   * `stb_vorbis.c` - Used to load OGG/Vorbis audio files
+  * `stb_image.h` - Used to load image files
 * Version:
   * `stb_vorbis.c` - `1.20`
+  * `stb_image.h` - `2.26`
 
 ### [dr_libs](https://github.com/mackron/dr_libs)
 

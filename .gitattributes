@@ -3,6 +3,7 @@
 src/audio/dr_wav.h linguist-vendored
 src/audio/dr_flac.h linguist-vendored
 src/audio/stb_vorbis.c linguist-vendored
+src/image/stb_image.h linguist-vendored
 
 # Setting correct filetypes
 content.project linguist-language=Lua
