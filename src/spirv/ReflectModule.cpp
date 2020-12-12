@@ -101,32 +101,6 @@ VegaBool ReflectModule::reflectDescriptor(uint32_t index, DescriptorInfo* info) 
 }
 
 // ====================================================================================================================
-VegaBool ReflectModule::reflectInput(uint32_t index) const
-{
-	// Validate
-	if (index >= inputs_.size()) {
-		error_ = ReflectError::BadMemberIndex;
-		return VEGA_FALSE;
-	}
-	const auto var = inputs_[index];
-
-	return VEGA_TRUE;
-}
-
-// ====================================================================================================================
-VegaBool ReflectModule::reflectOutput(uint32_t index) const
-{
-	// Validate
-	if (index >= outputs_.size()) {
-		error_ = ReflectError::BadMemberIndex;
-		return VEGA_FALSE;
-	}
-	const auto var = outputs_[index];
-
-	return VEGA_TRUE;
-}
-
-// ====================================================================================================================
 ShaderStage ReflectModule::ConvertStage(SpvReflectShaderStageFlagBits stage)
 {
 	switch (stage)

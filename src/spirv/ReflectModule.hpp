@@ -106,8 +106,6 @@ public:
 
 	// Member reflect
 	VegaBool reflectDescriptor(uint32_t index, DescriptorInfo* info) const;
-	VegaBool reflectInput(uint32_t index) const;
-	VegaBool reflectOutput(uint32_t index) const;
 
 private:
 	// Convert the library stage to the public API stage

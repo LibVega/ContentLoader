@@ -6,8 +6,8 @@
 
 #include "./spirv/ReflectModule.hpp"
 
-/// SPIRV API: Open Reflection Module
-VEGA_API_EXPORT ReflectModule* vegaSpirvReflectModule(const uint32_t* code, size_t size, ReflectError* error)
+/// SPIRV API: Create Reflection Module
+VEGA_API_EXPORT ReflectModule* vegaSpirvCreateModule(const uint32_t* code, size_t size, ReflectError* error)
 {
 	auto mod = new ReflectModule(code, size);
 	*error = mod->error();
