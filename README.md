@@ -53,7 +53,7 @@ This library is made up of a wide set of other code solutions, which are listed 
 ### [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)
 
 * Components: spirv_reflect.h, spirv_reflect.c, spirv.h
-* License: Apache-2.0
+* License: [Apache-2.0](./licenses/spirv-reflect)
 * Description: Used to perform reflection of SPIRV shader bytecode programs.
 * Version:
   * `spirv_reflect.h` - commit `fcf82e4`
