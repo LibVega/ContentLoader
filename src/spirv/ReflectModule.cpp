@@ -9,13 +9,20 @@
 
 // ====================================================================================================================
 ReflectModule::ReflectModule(const uint32_t* code, size_t size)
-	: module_{ }
+	: module_{ new spv_reflect::ShaderModule(size, code) }
 	, error_{ ReflectError::None }
+	, stage_{ ShaderStage::Invalid }
 {
-	// Open the module
-	const auto res = spvReflectCreateShaderModule(size, code, &module_);
-	if (res != SPV_REFLECT_RESULT_SUCCESS) {
+	// Check the module results
+	if (module_->GetResult() != SPV_REFLECT_RESULT_SUCCESS) {
 		error_ = ReflectError::InvalidBytecode;
+		return;
+	}
+
+	// Check the top-level module info
+	stage_ = ConvertStage(module_->GetShaderStage());
+	if (stage_ == ShaderStage::Invalid) {
+		error_ = ReflectError::InvalidStage;
 		return;
 	}
 }
@@ -24,7 +31,22 @@ ReflectModule::ReflectModule(const uint32_t* code, size_t size)
 ReflectModule::~ReflectModule()
 {
 	// Destroy module
-	if (error_ != ReflectError::InvalidBytecode) {
-		spvReflectDestroyShaderModule(&module_);
+	if (module_) {
+		delete module_;
+		module_ = nullptr;
+	}
+}
+
+// ====================================================================================================================
+ShaderStage ReflectModule::ConvertStage(SpvReflectShaderStageFlagBits stage)
+{
+	switch (stage)
+	{
+	case SPV_REFLECT_SHADER_STAGE_VERTEX_BIT: return ShaderStage::Vertex;
+	case SPV_REFLECT_SHADER_STAGE_TESSELLATION_CONTROL_BIT: return ShaderStage::TessControl;
+	case SPV_REFLECT_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: return ShaderStage::TessEval;
+	case SPV_REFLECT_SHADER_STAGE_GEOMETRY_BIT: return ShaderStage::Geometry;
+	case SPV_REFLECT_SHADER_STAGE_FRAGMENT_BIT: return ShaderStage::Fragment;
+	default: return ShaderStage::Invalid;
 	}
 }
