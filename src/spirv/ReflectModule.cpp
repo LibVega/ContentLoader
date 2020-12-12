@@ -11,7 +11,7 @@
 ReflectModule::ReflectModule(const uint32_t* code, size_t size)
 	: module_{ new spv_reflect::ShaderModule(size, code) }
 	, error_{ ReflectError::None }
-	, stage_{ ShaderStage::Invalid }
+	, stage_{ ReflectStage::Invalid }
 	, descriptors_{ }
 	, inputs_{ }
 	, outputs_{ }
@@ -24,7 +24,7 @@ ReflectModule::ReflectModule(const uint32_t* code, size_t size)
 
 	// Check the top-level module info
 	stage_ = ConvertStage(module_->GetShaderStage());
-	if (stage_ == ShaderStage::Invalid) {
+	if (stage_ == ReflectStage::Invalid) {
 		error_ = ReflectError::InvalidStage;
 		return;
 	}
@@ -91,7 +91,7 @@ VegaBool ReflectModule::reflectDescriptor(uint32_t index, DescriptorInfo* info) 
 	info->size = desc->block.size;
 	info->arraySize = GetArraySize(desc->array);
 	info->image.type = GetImageType(desc->image);
-	if (info->image.type == ImageType::Unknown) {
+	if (info->image.type == ImageDims::Unknown) {
 		error_ = ReflectError::BadImageType;
 		return VEGA_FALSE;
 	}
@@ -101,16 +101,16 @@ VegaBool ReflectModule::reflectDescriptor(uint32_t index, DescriptorInfo* info) 
 }
 
 // ====================================================================================================================
-ShaderStage ReflectModule::ConvertStage(SpvReflectShaderStageFlagBits stage)
+ReflectStage ReflectModule::ConvertStage(SpvReflectShaderStageFlagBits stage)
 {
 	switch (stage)
 	{
-	case SPV_REFLECT_SHADER_STAGE_VERTEX_BIT: return ShaderStage::Vertex;
-	case SPV_REFLECT_SHADER_STAGE_TESSELLATION_CONTROL_BIT: return ShaderStage::TessControl;
-	case SPV_REFLECT_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: return ShaderStage::TessEval;
-	case SPV_REFLECT_SHADER_STAGE_GEOMETRY_BIT: return ShaderStage::Geometry;
-	case SPV_REFLECT_SHADER_STAGE_FRAGMENT_BIT: return ShaderStage::Fragment;
-	default: return ShaderStage::Invalid;
+	case SPV_REFLECT_SHADER_STAGE_VERTEX_BIT: return ReflectStage::Vertex;
+	case SPV_REFLECT_SHADER_STAGE_TESSELLATION_CONTROL_BIT: return ReflectStage::TessControl;
+	case SPV_REFLECT_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: return ReflectStage::TessEval;
+	case SPV_REFLECT_SHADER_STAGE_GEOMETRY_BIT: return ReflectStage::Geometry;
+	case SPV_REFLECT_SHADER_STAGE_FRAGMENT_BIT: return ReflectStage::Fragment;
+	default: return ReflectStage::Invalid;
 	}
 }
 
@@ -139,13 +139,13 @@ uint32_t ReflectModule::GetArraySize(const SpvReflectBindingArrayTraits& traits)
 }
 
 // ====================================================================================================================
-ImageType ReflectModule::GetImageType(const SpvReflectImageTraits& traits)
+ImageDims ReflectModule::GetImageType(const SpvReflectImageTraits& traits)
 {
 	switch (traits.dim)
 	{
-	case SpvDim1D: return traits.arrayed ? ImageType::Unknown : ImageType::E1D; // TODO: Array support
-	case SpvDim2D: return traits.arrayed ? ImageType::Unknown : ImageType::E2D; // TODO: Array support
-	case SpvDim3D: return ImageType::E3D;
-	default: return ImageType::Unknown;
+	case SpvDim1D: return traits.arrayed ? ImageDims::Unknown : ImageDims::E1D; // TODO: Array support
+	case SpvDim2D: return traits.arrayed ? ImageDims::Unknown : ImageDims::E2D; // TODO: Array support
+	case SpvDim3D: return ImageDims::E3D;
+	default: return ImageDims::Unknown;
 	}
 }

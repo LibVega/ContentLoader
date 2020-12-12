@@ -25,9 +25,9 @@ VEGA_API_EXPORT ReflectError vegaSpirvGetError(const ReflectModule* mod)
 }
 
 /// SPIRV API: Get module shader stage
-VEGA_API_EXPORT ShaderStage vegaSpirvGetStage(const ReflectModule* mod)
+VEGA_API_EXPORT ReflectStage vegaSpirvGetStage(const ReflectModule* mod)
 {
-	return mod ? mod->stage() : ShaderStage::Invalid;
+	return mod ? mod->stage() : ReflectStage::Invalid;
 }
 
 /// SPIRV API: Get module entry point

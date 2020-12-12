@@ -32,7 +32,7 @@ enum class ReflectError : uint32_t
 
 
 // Reflection shader stages
-enum class ShaderStage : uint32_t
+enum class ReflectStage : uint32_t
 {
 	Invalid = 0,
 	Vertex = 1,
@@ -40,7 +40,7 @@ enum class ShaderStage : uint32_t
 	TessEval = 3,
 	Geometry = 4,
 	Fragment = 5
-}; // enum class ShaderStage
+}; // enum class ReflectStage
 
 
 // Types for descriptor bindings
@@ -56,13 +56,13 @@ enum class DescriptorType : uint32_t
 
 
 // Possible image dimension types
-enum class ImageType : uint32_t
+enum class ImageDims : uint32_t
 {
 	Unknown = 0,
 	E1D = 1,
 	E2D = 2,
 	E3D = 3,
-}; // enum class ImageType
+}; // enum class ImageDims
 
 
 // Descriptor Info (meant for interop with C# code, hence the packing)
@@ -78,7 +78,7 @@ public:
 	uint32_t size;       // For block types, this is the size in bytes, otherwise zero
 	uint32_t arraySize;  // For all types, this is the total size of all dims of the array, otherwise zero
 	struct {
-		ImageType type;  // Image type
+		ImageDims type;  // Image type
 		VegaBool ms;     // If the image is multisampled
 	} image;
 }; // struct DescriptorInfo
@@ -97,7 +97,7 @@ public:
 	inline bool hasError() const { return error_ != ReflectError::None; }
 
 	// Shader reflect
-	inline ShaderStage stage() const { return stage_; }
+	inline ReflectStage stage() const { return stage_; }
 	inline const char* entryPoint() const { return module_->GetEntryPointName(); }
 	inline uint32_t descriptorCount() const { return uint32_t(descriptors_.size()); }
 	inline uint32_t inputCount() const { return uint32_t(inputs_.size()); }
@@ -109,15 +109,15 @@ public:
 
 private:
 	// Convert the library stage to the public API stage
-	static ShaderStage ConvertStage(SpvReflectShaderStageFlagBits stage);
+	static ReflectStage ConvertStage(SpvReflectShaderStageFlagBits stage);
 	static DescriptorType ConvertDescriptorType(SpvReflectDescriptorType type);
 	static uint32_t GetArraySize(const SpvReflectBindingArrayTraits& traits);
-	static ImageType GetImageType(const SpvReflectImageTraits& traits);
+	static ImageDims GetImageType(const SpvReflectImageTraits& traits);
 
 private:
 	spv_reflect::ShaderModule* module_;
 	mutable ReflectError error_;
-	ShaderStage stage_;
+	ReflectStage stage_;
 	std::vector<const SpvReflectDescriptorBinding*> descriptors_;
 	std::vector<const SpvReflectInterfaceVariable*> inputs_;
 	std::vector<const SpvReflectInterfaceVariable*> outputs_;
