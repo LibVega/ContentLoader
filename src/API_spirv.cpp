@@ -19,21 +19,51 @@ VEGA_API_EXPORT ReflectModule* vegaSpirvReflectModule(const uint32_t* code, size
 }
 
 /// SPIRV API: Get module error code
-VEGA_API_EXPORT ReflectError vegaSpirvGetModuleError(const ReflectModule* mod)
+VEGA_API_EXPORT ReflectError vegaSpirvGetError(const ReflectModule* mod)
 {
 	return mod ? mod->error() : ReflectError::NullModule;
 }
 
 /// SPIRV API: Get module shader stage
-VEGA_API_EXPORT ShaderStage vegaSpirvGetModuleStage(const ReflectModule* mod)
+VEGA_API_EXPORT ShaderStage vegaSpirvGetStage(const ReflectModule* mod)
 {
 	return mod ? mod->stage() : ShaderStage::Invalid;
 }
 
 /// SPIRV API: Get module entry point
-VEGA_API_EXPORT const char* vegaSpirvGetModuleEntryPoint(const ReflectModule* mod)
+VEGA_API_EXPORT const char* vegaSpirvGetEntryPoint(const ReflectModule* mod)
 {
 	return mod ? mod->entryPoint() : nullptr;
+}
+
+/// SPIRV API: Get module descriptor count
+VEGA_API_EXPORT uint32_t vegaSpirvGetDescriptorCount(const ReflectModule* mod)
+{
+	return mod ? mod->descriptorCount() : 0;
+}
+
+/// SPIRV API: Get module input count
+VEGA_API_EXPORT uint32_t vegaSpirvGetInputCount(const ReflectModule* mod)
+{
+	return mod ? mod->inputCount() : 0;
+}
+
+/// SPIRV API: Get module output count
+VEGA_API_EXPORT uint32_t vegaSpirvGetOutputCount(const ReflectModule* mod)
+{
+	return mod ? mod->outputCount() : 0;
+}
+
+/// SPIRV API: Get module push block size
+VEGA_API_EXPORT uint32_t vegaSpirvGetPushSize(const ReflectModule* mod)
+{
+	return mod ? mod->pushSize() : 0;
+}
+
+/// SPIRV API: Reflect module descriptor
+VEGA_API_EXPORT VegaBool vegaSpirvReflectDescriptor(const ReflectModule* mod, uint32_t index, DescriptorInfo* info)
+{
+	return mod ? mod->reflectDescriptor(index, info) : VEGA_FALSE;
 }
 
 /// SPIRV API: Close Reflection Module

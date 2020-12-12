@@ -54,3 +54,8 @@
 /* Standard Includes */
 #include <cstdint>
 #include <string>
+
+/* Public API Booleans */
+typedef uint32_t VegaBool;
+#define VEGA_TRUE (VegaBool(1))
+#define VEGA_FALSE (VegaBool(0))
