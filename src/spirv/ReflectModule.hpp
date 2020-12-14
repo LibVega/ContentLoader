@@ -14,7 +14,7 @@
 
 #include "./spirv_reflect.h"
 
-#include <vector>
+#include <array>
 
 #define VEGA_MAX_SET_COUNT (4) // 4 sets total
 #define VEGA_MAX_PER_SET_SLOTS (8) // 8 binding slots per binding set
@@ -34,12 +34,13 @@ enum class ReflectError : uint32_t
 	NullModule = 1,              // Special public API error for passing a null module
 	InvalidBytecode = 2,         // Bad bytecode or other parsing error
 	InvalidStage = 3,            // Unsupported shader stage
-	InvalidPushBlockCount = 4,   // Too many push blocks (>1)
+	MultiplePushBlocks = 4,      // Too many push blocks (>1)
 	MultipleEntryPoints = 5,     // Module has more than one entry point
 	UnsupportedBindingType = 6,  // The descriptor type is unknown or unsupported
 	InvalidBindingType = 7,      // The descriptor type is invalid for the set it appears in
-	BindingSetOutOfRange = 8,    // A descriptor is bound to an invalid set index (>= 
-	BindingSlotOutOfRange = 9,   // A descriptor is bound to an invalid slot index (>= VEGA_MAX_PER_SET_SLOTS)
+	InvalidImageDims = 8,        // Invalid or unsupported image dims (includes multi-sampled)
+	BindingSetOutOfRange = 9,    // A descriptor is bound to an invalid set index (>= VEGA_MAX_SET_COUNT)
+	BindingSlotOutOfRange = 10,  // A descriptor is bound to an invalid slot index (>= VEGA_MAX_PER_SET_SLOTS)
 }; // enum class ReflectError
 
 
@@ -91,7 +92,9 @@ enum class ImageDims : uint32_t
 	E2DArray = 4,
 	E3D = 5,
 	Cube = 6,
-	CubeArray = 7
+	CubeArray = 7,
+	Buffer = 8,        // The image is a uniform texel buffer or storage texel buffer
+	SubpassInput = 9,  // The image is a subpass input attachment
 }; // enum class ImageDims
 
 
@@ -103,8 +106,8 @@ struct BindingInfo final
 	BindingSet set;       // Binding set (set # in 'layout(...)')
 	uint32_t slot;        // Binding slot (binding # in 'layout(...)')
 	BindingType type;     // The binding type
-	uint32_t blockSize;   // Block size in bytes, if buffer type, UINT32_MAX if unknown/dynamic
-	uint32_t arraySize;   // Array size in elements, along all dims, UINT32_MAX if unknown/dynamic
+	uint32_t arraySize;   // Array size in elements, along all dims, UINT32_MAX if unknown/dynamic/runtime
+	uint32_t blockSize;   // Block size in bytes, if buffer type, 0 if unknown/dynamic
 	ImageDims imageDims;  // The dims of the image, if image type
 }; // struct BindingInfo
 #pragma pack(pop)
@@ -120,6 +123,9 @@ public:
 	// Error
 	inline ReflectError error() const { return error_; }
 	inline bool hasError() const { return error_ != ReflectError::None; }
+	inline void bindingError(uint32_t* set, uint32_t* binding) const {
+		*set = bindingError_.set; *binding = bindingError_.binding;
+	}
 
 	// Top-level reflection
 	inline ReflectStage stage() const { return stage_; }
@@ -127,10 +133,22 @@ public:
 	inline uint32_t pushSize() const { return pushSize_; }
 
 private:
+	static ReflectError ParseBinding(const SpvReflectDescriptorBinding& desc, std::string& name, BindingInfo& bind);
+	static ReflectStage ConvertStage(SpvReflectShaderStageFlagBits stage);
+	static BindingType ConvertBindingType(SpvReflectDescriptorType type);
+	static uint32_t GetBindingArraySize(const SpvReflectBindingArrayTraits& traits);
+	static ImageDims GetImageDims(const SpvReflectImageTraits& traits);
 
 private:
 	ReflectError error_;
 	ReflectStage stage_;
 	std::string entryPoint_;
 	uint32_t pushSize_;
+	struct
+	{
+		uint32_t set;
+		uint32_t binding;
+	} bindingError_;
+	std::array<std::array<BindingInfo, VEGA_MAX_PER_SET_SLOTS>, VEGA_MAX_SET_COUNT> bindings_;
+	std::array<std::array<std::string, VEGA_MAX_PER_SET_SLOTS>, VEGA_MAX_SET_COUNT> names_;
 }; // class ReflectModule
