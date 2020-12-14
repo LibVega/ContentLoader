@@ -20,9 +20,9 @@
 #define VEGA_MAX_PER_SET_SLOTS (8) // 8 binding slots per binding set
 
 /// Vega uses a slot-based binding model, and the binding types are specific to certain set indices:
-///    (0) - Buffers, including all uniform and storage buffers (both readonly and read/write)
-///    (1) - Read-Only texel objects, including samplers, sampled textures, and uniform texel buffers
-///    (2) - Read-Write texel objects, including storage textures and storage texel buffers
+///    (0) - Buffers, including uniform, storage, uniform texel, and storage texel buffers
+///    (1) - Samplers, including samplers, combined sampler/images, and buffer samplers
+///    (2) - Images, including sampled images and storage images
 ///    (3) - Input attachments, this is managed by the library and cannot be explicitly bound by users
 ///
 
@@ -59,9 +59,9 @@ enum class ReflectStage : uint32_t
 // The "namespaces" for the binding sets
 enum class BindingSet : uint32_t
 {
-	Buffer = 0,            // Buffer objects set (=0)
-	ReadOnlyTexel = 1,     // Read-Only texel objects set (=1)
-	ReadWriteTexel = 2,    // Read/Write texel objects set (=2)
+	Buffers = 0,           // Buffer objects set (=0)
+	Samplers = 1,          // Sampler-like objects set (=1)
+	Images = 2,            // Image-like objects set (=2)
 	InputAttachments = 3,  // Input attachments set (=3)
 }; // enum class BindingSet
 
@@ -93,7 +93,7 @@ enum class ImageDims : uint32_t
 	E3D = 5,
 	Cube = 6,
 	CubeArray = 7,
-	Buffer = 8,        // The image is a uniform texel buffer or storage texel buffer
+	Buffer = 8,        // The image is a uniform texel buffer
 	SubpassInput = 9,  // The image is a subpass input attachment
 }; // enum class ImageDims
 
@@ -142,6 +142,7 @@ private:
 	static BindingType ConvertBindingType(SpvReflectDescriptorType type);
 	static uint32_t GetBindingArraySize(const SpvReflectBindingArrayTraits& traits);
 	static ImageDims GetImageDims(const SpvReflectImageTraits& traits);
+	static bool ValidateBindingSet(BindingType type, BindingSet set);
 
 private:
 	ReflectError error_;

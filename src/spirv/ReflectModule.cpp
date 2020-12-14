@@ -136,6 +136,9 @@ ReflectError ReflectModule::ParseBinding(const SpvReflectDescriptorBinding& desc
 	if (bind.type == BindingType::Unknown) {
 		return ReflectError::UnsupportedBindingType;
 	}
+	if (!ValidateBindingSet(bind.type, bind.set)) {
+		return ReflectError::InvalidBindingType;
+	}
 	const bool isBlock = (bind.type == BindingType::UniformBuffer) || (bind.type == BindingType::StorageBuffer);
 	bind.arraySize = GetBindingArraySize(desc.array);
 
@@ -218,5 +221,23 @@ ImageDims ReflectModule::GetImageDims(const SpvReflectImageTraits& traits)
 	case SpvDimBuffer: return ImageDims::Buffer;
 	case SpvDimSubpassData: return ImageDims::SubpassInput;
 	default: return ImageDims::Unknown;
+	}
+}
+
+// ====================================================================================================================
+bool ReflectModule::ValidateBindingSet(BindingType type, BindingSet set)
+{
+	switch (type)
+	{
+	case BindingType::Sampler: return set == BindingSet::Samplers;
+	case BindingType::CombinedImageSampler: return set == BindingSet::Samplers;
+	case BindingType::SampledImage: return set == BindingSet::Images;
+	case BindingType::StorageImage: return set == BindingSet::Images;
+	case BindingType::UniformTexelBuffer: return set == BindingSet::Buffers;
+	case BindingType::StorageTexelBuffer: return set == BindingSet::Buffers;
+	case BindingType::UniformBuffer: return set == BindingSet::Buffers;
+	case BindingType::StorageBuffer: return set == BindingSet::Buffers;
+	case BindingType::InputAttachment: return set == BindingSet::InputAttachments;
+	default: return false;
 	}
 }
