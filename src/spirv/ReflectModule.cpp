@@ -6,6 +6,9 @@
 
 #include "./ReflectModule.hpp"
 
+#define SET_BIT(name,idx) ((name)|(1<<(idx)))
+#define CLR_BIT(name,idx) ((name)&(~(1<<(idx))))
+
 
 // ====================================================================================================================
 ReflectModule::ReflectModule(const uint32_t* code, size_t size)
@@ -77,6 +80,46 @@ ReflectModule::ReflectModule(const uint32_t* code, size_t size)
 ReflectModule::~ReflectModule()
 {
 
+}
+
+// ====================================================================================================================
+uint32_t ReflectModule::getSetMask(BindingSet set) const
+{
+	// Validate set index
+	const uint32_t sidx = uint32_t(set);
+	if (sidx >= VEGA_MAX_SET_COUNT) {
+		return 0;
+	}
+
+	// Populate the mask
+	const auto& setref = bindings_[sidx];
+	uint32_t mask = 0;
+	for (uint32_t i = 0; i < VEGA_MAX_PER_SET_SLOTS; ++i) {
+		if (setref[i].name) {
+			mask = SET_BIT(mask, i);
+		}
+		else {
+			mask = CLR_BIT(mask, i);
+		}
+	}
+	return mask;
+}
+
+// ====================================================================================================================
+const BindingInfo* ReflectModule::getBinding(BindingSet set, uint32_t slot) const
+{
+	// Validate indices
+	const uint32_t sidx = uint32_t(set);
+	if (sidx >= VEGA_MAX_SET_COUNT) {
+		return nullptr;
+	}
+	if (slot >= VEGA_MAX_PER_SET_SLOTS) {
+		return nullptr;
+	}
+
+	// Get the info (return nullptr if not populated)
+	const auto& bind = bindings_[sidx][slot];
+	return bind.name ? &bind : nullptr;
 }
 
 // ====================================================================================================================

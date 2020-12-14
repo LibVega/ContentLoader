@@ -19,6 +19,21 @@ VEGA_API_EXPORT ReflectError vegaSpirvGetError(const ReflectModule* mod)
 	return mod ? mod->error() : ReflectError::NullModule;
 }
 
+/// SPIRV API: Get module binding error indices
+VEGA_API_EXPORT ReflectError vegaSpirvGetBindingError(const ReflectModule* mod, uint32_t* set, uint32_t* slot)
+{
+	if (mod) {
+		if (mod->hasError()) {
+			mod->bindingError(set, slot);
+		}
+		else {
+			*set = *slot = 0;
+		}
+		return mod->error();
+	}
+	return ReflectError::NullModule;
+}
+
 /// SPIRV API: Get module shader stage
 VEGA_API_EXPORT ReflectError vegaSpirvGetStage(const ReflectModule* mod, ReflectStage* stage)
 {
@@ -52,6 +67,30 @@ VEGA_API_EXPORT ReflectError vegaSpirvGetPushSize(const ReflectModule* mod, uint
 		}
 		return mod->error();
 	}
+	return ReflectError::NullModule;
+}
+
+/// SPIRV API: Get module set mask
+VEGA_API_EXPORT ReflectError vegaSpirvGetSetMask(const ReflectModule* mod, BindingSet set, uint32_t* mask)
+{
+	if (mod) {
+		if (!mod->hasError()) {
+			*mask = mod->getSetMask(set);
+		}
+		return mod->error();
+	}
+	return ReflectError::NullModule;
+}
+
+/// SPIRV API: Get binding info
+VEGA_API_EXPORT ReflectError vegaSpirvGetBindingInfo(const ReflectModule* mod, BindingSet set, uint32_t slot,
+	const BindingInfo** info)
+{
+	if (mod) {
+		*info = mod->hasError() ? nullptr : mod->getBinding(set, slot);
+		return mod->error();
+	}
+	*info = nullptr;
 	return ReflectError::NullModule;
 }
 

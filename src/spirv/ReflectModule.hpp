@@ -132,6 +132,10 @@ public:
 	inline const char* entryPoint() const { return entryPoint_.c_str(); }
 	inline uint32_t pushSize() const { return pushSize_; }
 
+	// Bindings
+	uint32_t getSetMask(BindingSet set) const;
+	const BindingInfo* getBinding(BindingSet set, uint32_t slot) const;
+
 private:
 	static ReflectError ParseBinding(const SpvReflectDescriptorBinding& desc, std::string& name, BindingInfo& bind);
 	static ReflectStage ConvertStage(SpvReflectShaderStageFlagBits stage);
