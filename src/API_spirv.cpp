@@ -25,45 +25,39 @@ VEGA_API_EXPORT ReflectError vegaSpirvGetError(const ReflectModule* mod)
 }
 
 /// SPIRV API: Get module shader stage
-VEGA_API_EXPORT ReflectStage vegaSpirvGetStage(const ReflectModule* mod)
+VEGA_API_EXPORT ReflectError vegaSpirvGetStage(const ReflectModule* mod, ReflectStage* stage)
 {
-	return mod ? mod->stage() : ReflectStage::Invalid;
+	if (mod) {
+		if (!mod->hasError()) {
+			*stage = mod->stage();
+		}
+		return mod->error();
+	}
+	return ReflectError::NullModule;
 }
 
 /// SPIRV API: Get module entry point
-VEGA_API_EXPORT const char* vegaSpirvGetEntryPoint(const ReflectModule* mod)
+VEGA_API_EXPORT ReflectError vegaSpirvGetEntryPoint(const ReflectModule* mod, const char** entryPoint)
 {
-	return mod ? mod->entryPoint() : nullptr;
-}
-
-/// SPIRV API: Get module descriptor count
-VEGA_API_EXPORT uint32_t vegaSpirvGetDescriptorCount(const ReflectModule* mod)
-{
-	return mod ? mod->descriptorCount() : 0;
-}
-
-/// SPIRV API: Get module input count
-VEGA_API_EXPORT uint32_t vegaSpirvGetInputCount(const ReflectModule* mod)
-{
-	return mod ? mod->inputCount() : 0;
-}
-
-/// SPIRV API: Get module output count
-VEGA_API_EXPORT uint32_t vegaSpirvGetOutputCount(const ReflectModule* mod)
-{
-	return mod ? mod->outputCount() : 0;
+	if (mod) {
+		if (!mod->hasError()) {
+			*entryPoint = mod->entryPoint();
+		}
+		return mod->error();
+	}
+	return ReflectError::NullModule;
 }
 
 /// SPIRV API: Get module push block size
-VEGA_API_EXPORT uint32_t vegaSpirvGetPushSize(const ReflectModule* mod)
+VEGA_API_EXPORT ReflectError vegaSpirvGetPushSize(const ReflectModule* mod, uint32_t* pushSize)
 {
-	return mod ? mod->pushSize() : 0;
-}
-
-/// SPIRV API: Reflect module descriptor
-VEGA_API_EXPORT VegaBool vegaSpirvReflectDescriptor(const ReflectModule* mod, uint32_t index, DescriptorInfo* info)
-{
-	return mod ? mod->reflectDescriptor(index, info) : VEGA_FALSE;
+	if (mod) {
+		if (!mod->hasError()) {
+			*pushSize = mod->pushSize();
+		}
+		return mod->error();
+	}
+	return ReflectError::NullModule;
 }
 
 /// SPIRV API: Close Reflection Module

@@ -16,18 +16,30 @@
 
 #include <vector>
 
+#define VEGA_MAX_SET_COUNT (4) // 4 sets total
+#define VEGA_MAX_PER_SET_SLOTS (8) // 8 binding slots per binding set
+
+/// Vega uses a slot-based binding model, and the binding types are specific to certain set indices:
+///    (0) - Buffers, including all uniform and storage buffers (both readonly and read/write)
+///    (1) - Read-Only texel objects, including samplers, sampled textures, and uniform texel buffers
+///    (2) - Read-Write texel objects, including storage textures and storage texel buffers
+///    (3) - Input attachments, this is managed by the library and cannot be explicitly bound by users
+///
+
 
 // Reflection error codes
 enum class ReflectError : uint32_t
 {
-	None = 0,
-	NullModule = 1, // Special public API error for passing a null module
-	InvalidBytecode = 2, // Bad bytecode or other parsing error
-	InvalidStage = 3, // Unsupported shader stage
-	InvalidPushBlockCount = 4, // Too many push blocks (>1)
-	BadMemberIndex = 5, // Invalid index for accessing module members (descriptors, inputs, outputs)
-	BadDescriptorType = 6, // Unsupported descriptor type
-	BadImageType = 7, // Unsupported image or sampler dimensions
+	None = 0,                    // No error
+	NullModule = 1,              // Special public API error for passing a null module
+	InvalidBytecode = 2,         // Bad bytecode or other parsing error
+	InvalidStage = 3,            // Unsupported shader stage
+	InvalidPushBlockCount = 4,   // Too many push blocks (>1)
+	MultipleEntryPoints = 5,     // Module has more than one entry point
+	UnsupportedBindingType = 6,  // The descriptor type is unknown or unsupported
+	InvalidBindingType = 7,      // The descriptor type is invalid for the set it appears in
+	BindingSetOutOfRange = 8,    // A descriptor is bound to an invalid set index (>= 
+	BindingSlotOutOfRange = 9,   // A descriptor is bound to an invalid slot index (>= VEGA_MAX_PER_SET_SLOTS)
 }; // enum class ReflectError
 
 
@@ -43,16 +55,30 @@ enum class ReflectStage : uint32_t
 }; // enum class ReflectStage
 
 
+// The "namespaces" for the binding sets
+enum class BindingSet : uint32_t
+{
+	Buffer = 0,            // Buffer objects set (=0)
+	ReadOnlyTexel = 1,     // Read-Only texel objects set (=1)
+	ReadWriteTexel = 2,    // Read/Write texel objects set (=2)
+	InputAttachments = 3,  // Input attachments set (=3)
+}; // enum class BindingSet
+
+
 // Types for descriptor bindings
-enum class DescriptorType : uint32_t
+enum class BindingType : uint32_t
 {
 	Unknown = 0,
 	Sampler = 1,
-	Image = 2,
-	ImageSampler = 3, // Combined image sampler
-	UniformBuffer = 4,
-	InputAttachment = 5
-}; // enum class DescriptorType
+	CombinedImageSampler = 2,
+	SampledImage = 3,
+	StorageImage = 4,
+	UniformTexelBuffer = 5,
+	StorageTexelBuffer = 6,
+	UniformBuffer = 7,
+	StorageBuffer = 8,
+	InputAttachment = 9
+}; // enum class BindingType
 
 
 // Possible image dimension types
@@ -60,28 +86,27 @@ enum class ImageDims : uint32_t
 {
 	Unknown = 0,
 	E1D = 1,
-	E2D = 2,
-	E3D = 3,
+	E1DArray = 2,
+	E2D = 3,
+	E2DArray = 4,
+	E3D = 5,
+	Cube = 6,
+	CubeArray = 7
 }; // enum class ImageDims
 
 
-// Descriptor Info (meant for interop with C# code, hence the packing)
+// Info about a binding slot (packed for C# interop)
 #pragma pack(push, 1)
-struct DescriptorInfo final
+struct BindingInfo final
 {
-public:
-	const char* name;    // Name
-	uint32_t set;        // Set location
-	uint32_t binding;    // Binding location
-	uint32_t inputIndex; // Input attachment index, or zero
-	DescriptorType type; // Type
-	uint32_t size;       // For block types, this is the size in bytes, otherwise zero
-	uint32_t arraySize;  // For all types, this is the total size of all dims of the array, otherwise zero
-	struct {
-		ImageDims type;  // Image type
-		VegaBool ms;     // If the image is multisampled
-	} image;
-}; // struct DescriptorInfo
+	const char* name;     // The declared binding name
+	BindingSet set;       // Binding set (set # in 'layout(...)')
+	uint32_t slot;        // Binding slot (binding # in 'layout(...)')
+	BindingType type;     // The binding type
+	uint32_t blockSize;   // Block size in bytes, if buffer type, UINT32_MAX if unknown/dynamic
+	uint32_t arraySize;   // Array size in elements, along all dims, UINT32_MAX if unknown/dynamic
+	ImageDims imageDims;  // The dims of the image, if image type
+}; // struct BindingInfo
 #pragma pack(pop)
 
 
@@ -92,33 +117,20 @@ public:
 	ReflectModule(const uint32_t* code, size_t size);
 	~ReflectModule();
 
-	// Info
+	// Error
 	inline ReflectError error() const { return error_; }
 	inline bool hasError() const { return error_ != ReflectError::None; }
 
-	// Shader reflect
+	// Top-level reflection
 	inline ReflectStage stage() const { return stage_; }
-	inline const char* entryPoint() const { return module_->GetEntryPointName(); }
-	inline uint32_t descriptorCount() const { return uint32_t(descriptors_.size()); }
-	inline uint32_t inputCount() const { return uint32_t(inputs_.size()); }
-	inline uint32_t outputCount() const { return uint32_t(outputs_.size()); }
-	uint32_t pushSize() const;
-
-	// Member reflect
-	VegaBool reflectDescriptor(uint32_t index, DescriptorInfo* info) const;
+	inline const char* entryPoint() const { return entryPoint_.c_str(); }
+	inline uint32_t pushSize() const { return pushSize_; }
 
 private:
-	// Convert the library stage to the public API stage
-	static ReflectStage ConvertStage(SpvReflectShaderStageFlagBits stage);
-	static DescriptorType ConvertDescriptorType(SpvReflectDescriptorType type);
-	static uint32_t GetArraySize(const SpvReflectBindingArrayTraits& traits);
-	static ImageDims GetImageType(const SpvReflectImageTraits& traits);
 
 private:
-	spv_reflect::ShaderModule* module_;
-	mutable ReflectError error_;
+	ReflectError error_;
 	ReflectStage stage_;
-	std::vector<const SpvReflectDescriptorBinding*> descriptors_;
-	std::vector<const SpvReflectInterfaceVariable*> inputs_;
-	std::vector<const SpvReflectInterfaceVariable*> outputs_;
+	std::string entryPoint_;
+	uint32_t pushSize_;
 }; // class ReflectModule
