@@ -126,7 +126,7 @@ const BindingInfo* ReflectModule::getBinding(BindingSet set, uint32_t slot) cons
 ReflectError ReflectModule::ParseBinding(const SpvReflectDescriptorBinding& desc, std::string& name, BindingInfo& bind)
 {
 	// Get general info
-	name = { desc.name };
+	name = desc.name ? desc.name : "";
 	bind.name = name.c_str();
 	bind.set = BindingSet(desc.set); // Already checked before function call
 	bind.slot = desc.binding; // Already checked before function call
