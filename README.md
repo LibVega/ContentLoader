@@ -1,6 +1,6 @@
 # ContentLoader
 
-This repo contains the source for the native library used by [Vega](https://github.com/VegaLib/Vega) to load certain kinds of content files at runtime.
+This repo contains the source for the native library used by [Vega](https://github.com/LibVega/Vega) to load certain kinds of content files at runtime.
 
 The library itself centralizes and generalizes a variety of open source and public domain file loading solutions. Nearly all new code added to the library only works to tie together the various codes and make the general functionality available through the ABI.
 
@@ -49,13 +49,3 @@ This library is made up of a wide set of other code solutions, which are listed 
 * Version:
   * `dr_wav.h` - `0.12.11`
   * `dr_flac.h` - `0.12.20`
-
-### [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect)
-
-* Components: spirv_reflect.h, spirv_reflect.c, spirv.h
-* License: [Apache-2.0](./licenses/spirv-reflect)
-* Description: Used to perform reflection of SPIRV shader bytecode programs.
-* Version:
-  * `spirv_reflect.h` - commit `fcf82e4`
-  * `spirv_reflect.c` - commit `6ce4459`
-  * `spirv.h` - commit `7a97ed0`
